@@ -1,0 +1,39 @@
+services:
+    www:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: mrbs112
+        ports:
+            - "8082:80"
+        command: apache2ctl -D FOREGROUND
+        volumes:
+            - ./web:/var/www/html/
+        links:
+            - db
+        networks:
+            - default
+    db:
+        image: mysql:8.0
+        container_name: mrbs112-db
+        ports:
+            - "3309:3306"
+        command: --default-authentication-plugin=mysql_native_password
+        environment:
+            MYSQL_DATABASE: mrbsic_prod
+            MYSQL_USER: mrbsic_prod
+            MYSQL_PASSWORD: mrbsic_prod
+            MYSQL_ROOT_PASSWORD: root-mrbs
+        volumes:
+            - ./tables.my.sql:/docker-entrypoint-initdb.d/010-tables.sql
+            - persistent:/var/lib/mysql
+        networks:
+            - default
+    phpmyadmin:
+        image: phpmyadmin
+        links:
+            - db:db
+        ports:
+            - 8888:80
+volumes:
+    persistent:
